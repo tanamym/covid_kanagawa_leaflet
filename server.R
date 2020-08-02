@@ -149,7 +149,7 @@ shinyServer(function(input, output, session) {
                                      radius =sqrt(data7.1$count)*10,
                                      label = ~htmlEscape(count),
                                      labelOptions = labelOptions(direction = 'bottom',noHide = T, textOnly = TRUE,textsize = "10px"),
-                    ) },
+                    )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(input$x),sep = "~")))  , position = "topright") },
                 leaflet2={
                     date<-lubridate::ymd(input$x)-input$y
                     #集計
@@ -172,7 +172,7 @@ shinyServer(function(input, output, session) {
                                          radius =sqrt(jinko3$count_j)*10,
                                          label = ~htmlEscape(round(count_j,digits = 4)),
                                          labelOptions = labelOptions(direction = 'bottom',noHide = T, textOnly = TRUE,textsize = "10px")
-                        )
+                        )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(input$x),sep = "~")))  , position = "topright")
                     }
                 )
     }
