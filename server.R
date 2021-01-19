@@ -46,12 +46,16 @@ library(mapview)
 if (!require(magick)) {
     install.packages("magick")
 }
+library(stringr)
+if (!require(stringr)) {
+  install.packages("stringr")
+}
 library(magick)
 if (!require(webshot)) {
     install.packages("webshot")
    
 }
-webshot :: install_phantomjs()
+#webshot :: install_phantomjs()
 
 
 
@@ -60,8 +64,33 @@ shinyServer(function(input, output, session) {
     #コロナのデータ読み込み
     #data<-fread("https://dl.dropboxusercontent.com/s/6mztoeb6xf78g5w/COVID-19.csv", encoding="UTF-8")
     #修正済みデータの読み込み
-    data<-fread("kanagawa.csv", encoding="UTF-8")
-    data$確定日 <- lubridate::mdy(data$確定日)
+    data<-fread("kanagawa.csv", encoding="UTF-8") %>%
+      mutate(確定日= as.Date(確定日,format = "%m/%d/%Y"))
+    patient<-
+      read.csv("https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv") %>%
+      filter(!str_detect(居住地,"管内")) %>%
+      filter(発表日>="2020-12-01") %>%
+      rename("確定日"="発表日","居住市区町村"="居住地") %>%
+      mutate(年代 = str_replace(年代,"代","")) %>%
+      mutate(居住市区町村 = str_replace(居住市区町村,"神奈川県",""))
+    kanagawa<-read.csv("kanagawa2.csv") %>%
+      select(-X,-備考)
+    kanagawa2<-rbind(kanagawa,patient) %>%
+      mutate(受診都道府県 ="神奈川県",
+                   居住都道府県="神奈川県"
+                   )
+    
+    xy<-read.csv("xy.csv") %>%
+      select(-X.1)
+    
+    kanagawa2<-
+      left_join(kanagawa2,xy,by="居住市区町村") %>%
+      mutate(確定日=as.Date(確定日))
+    
+    data<-bind_rows(data,kanagawa2)
+    
+    
+    #data$確定日 <- lubridate::mdy(data$確定日)
     data$発症日 <- lubridate::mdy(data$発症日)
     data1<-data%>%
         select(年代,性別,確定日,発症日,受診都道府県,
