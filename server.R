@@ -95,6 +95,11 @@ shinyServer(function(input, output, session) {
       mutate(確定日=as.Date(確定日))
     
     data<-bind_rows(data,kanagawa2,kawasaki)
+    date<-
+      data%>%
+      data.frame()%>%
+      arrange(desc(確定日))%>%
+      distinct(確定日)
     
     
     #data$確定日 <- lubridate::mdy(data$確定日)
