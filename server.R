@@ -74,7 +74,10 @@ shinyServer(function(input, output, session) {
       mutate(年代 = str_replace(年代,"代","")) %>%
       mutate(居住市区町村 = str_replace(居住市区町村,"神奈川県",""))
     kanagawa<-read.csv("kanagawa2.csv") %>%
-      select(-X,-備考)
+      select(-X,-備考)%>%
+      filter(!居住市区町村%in%c("横浜市","横須賀市","相模原市","川崎市",
+                         "藤沢市"))
+
     kanagawa2<-rbind(kanagawa,patient) %>%
       mutate(受診都道府県 ="神奈川県",
                    居住都道府県="神奈川県"
@@ -86,8 +89,12 @@ shinyServer(function(input, output, session) {
     kanagawa2<-
       left_join(kanagawa2,xy,by="居住市区町村") %>%
       mutate(確定日=as.Date(確定日))
+    kawasaki<-
+      read.csv("kawasaki.csv") %>%
+      select(-X,番号,番号2)%>%
+      mutate(確定日=as.Date(確定日))
     
-    data<-bind_rows(data,kanagawa2)
+    data<-bind_rows(data,kanagawa2,kawasaki)
     
     
     #data$確定日 <- lubridate::mdy(data$確定日)
@@ -125,9 +132,12 @@ shinyServer(function(input, output, session) {
     #居住市区町村が川崎市以外で""ではない市区町村
     data5.5<-data1%>%
         filter(居住市区町村!=""&居住市区町村!="川崎市")
-
+    #川崎市NA
+    data5.6<-data1%>%
+      filter(居住市区町村=="川崎市",is.na(備考))
     #data5.1~data5.5まで結合
-    data6<-bind_rows(data5.1,data5.2,data5.3,data5.4,data5.5)
+   
+    data6<-bind_rows(data5.1,data5.2,data5.3,data5.4,data5.5,data5.6)
     #居住市区町村と備考と管内を一つにまとめたい
     #居住市区町村""
     data6.1<-data6%>%
@@ -169,7 +179,8 @@ shinyServer(function(input, output, session) {
                 #leafletの可視化
                 leaflet(data7.1) %>% addTiles() %>%
                     addProviderTiles(providers$CartoDB.Positron) %>%
-                    setView(lng=139.4725,lat=35.4478,zoom=10)%>%
+                    #setView(lng=139.4725,lat=35.4478,zoom=10)%>%
+                    fitBounds(lng1=139.124343, lat1=35.117843, lng2=139.652899, lat2=35.665052)%>%
                     addCircleMarkers(~X, ~Y, stroke=FALSE,
                                      radius =sqrt(data7.1$count)*10,
                                      label = ~htmlEscape(居住市区町村及び管内),
@@ -192,7 +203,8 @@ shinyServer(function(input, output, session) {
                         mutate(count_j=count/人口*100000)
                     leaflet(jinko3) %>% addTiles() %>%
                         addProviderTiles(providers$CartoDB.Positron) %>%
-                        setView(lng=139.4825,lat=35.4478,zoom=10)%>%
+                        #setView(lng=139.4825,lat=35.4478,zoom=10)%>%
+                        fitBounds(lng1=139.124343, lat1=35.117843, lng2=139.652899, lat2=35.665052)%>%
                         addCircleMarkers(~X, ~Y, stroke=FALSE,
                                          radius =sqrt(jinko3$count_j)*10,
                                          label = ~htmlEscape(居住市区町村及び管内),
