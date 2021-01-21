@@ -66,7 +66,7 @@ shinyUI(fluidPage(
     sidebarLayout(
         sidebarPanel(h3("入力"),
                      h4("地図の設定"),
-                     dateInput("x",label = h5("累積日数の最後の日付入力"),value = Sys.Date()),
+                     dateInput("x",label = h5("累積日数の最後の日付入力"),max=date[1,1],value = date[1,1]),#Sys.Date()),
                      numericInput("y",label = h5("終了日までの累積日数を入力"),value="14"),
                      h6("日付を6/30、日数を14にすると、6/16~6/30の累積感染者マップが出力されます。"),
                      radioButtons("button",label = "グラフの種類を選択してください",
