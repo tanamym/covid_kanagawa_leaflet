@@ -96,12 +96,18 @@ shinyServer(function(input, output, session) {
     
     data<-bind_rows(data,kanagawa2,kawasaki)
     date<-
-      data%>%
+      kawasaki%>%
       data.frame()%>%
       arrange(desc(確定日))%>%
       distinct(確定日)
     
-    
+    output$date<-
+      renderUI({
+        dateInput("x",
+                  label = h5("累積日数の最後の日付入力"),
+                  max = date[1,1],
+                  value = date[1,1])
+      })
     #data$確定日 <- lubridate::mdy(data$確定日)
     data$発症日 <- lubridate::mdy(data$発症日)
     data1<-data%>%
