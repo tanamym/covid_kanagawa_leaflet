@@ -51,7 +51,7 @@ if (!require(webshot)) {
     install.packages("webshot")
  
 }
-webshot :: install_phantomjs()
+#webshot :: install_phantomjs()
 
 #tmp.enc <- options()$encoding #標準コーディングを記録（native.encであることが多いです）
 #options(encoding = "UTF-8") #エンコーディングをUTF-8に変更
@@ -73,7 +73,11 @@ shinyUI(fluidPage(
                      radioButtons("button",label = "グラフの種類を選択してください",
                                   c("累積感染者数"="leaflet1",
                                     "10万人当たりの累積感染者数"="leaflet2")
-                                  )
+                                  ),
+                     sliderInput("en",label = "円のサイズの指定",
+                                 min = 1,
+                                 max = 10,
+                                 value = 5)
                     
                      
                      ),
