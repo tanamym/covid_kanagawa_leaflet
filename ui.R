@@ -47,6 +47,10 @@ if (!require(magick)) {
     install.packages("magick")
 }
 library(magick)
+if (!require(stringr)) {
+  install.packages("stringr")
+}
+library(stringr)
 # if (!require(webshot)) {
 #     install.packages("webshot")
 #  

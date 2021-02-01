@@ -46,11 +46,12 @@ library(mapview)
 if (!require(magick)) {
     install.packages("magick")
 }
-library(stringr)
+library(magick)
+
 if (!require(stringr)) {
   install.packages("stringr")
 }
-library(magick)
+library(stringr)
 # if (!require(webshot)) {
 #     install.packages("webshot")
 #    
