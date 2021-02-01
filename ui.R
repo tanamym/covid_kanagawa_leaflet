@@ -51,7 +51,7 @@ if (!require(webshot)) {
     install.packages("webshot")
  
 }
-#webshot :: install_phantomjs()
+webshot :: install_phantomjs()
 
 #tmp.enc <- options()$encoding #標準コーディングを記録（native.encであることが多いです）
 #options(encoding = "UTF-8") #エンコーディングをUTF-8に変更

@@ -55,7 +55,7 @@ if (!require(webshot)) {
     install.packages("webshot")
    
 }
-#webshot :: install_phantomjs()
+webshot :: install_phantomjs()
 
 
 
