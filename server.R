@@ -51,11 +51,11 @@ if (!require(stringr)) {
   install.packages("stringr")
 }
 library(magick)
-if (!require(webshot)) {
-    install.packages("webshot")
-   
-}
-webshot :: install_phantomjs()
+# if (!require(webshot)) {
+#     install.packages("webshot")
+#    
+# }
+# #webshot :: install_phantomjs()
 
 
 
