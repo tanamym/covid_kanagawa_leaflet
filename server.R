@@ -63,90 +63,98 @@ webshot :: install_phantomjs()
 
 shinyServer(function(input, output, session) {
     #コロナのデータ読み込み
-  data<-
-    fread("kanagawa.csv", encoding="UTF-8") %>%
-    mutate(確定日= as.Date(確定日,format = "%m/%d/%Y"))%>%
-    select(確定日,受診都道府県,居住都道府県,居住市区町村,備考,X,Y)%>%
-    filter(居住都道府県=="神奈川県")%>%
-    filter(居住市区町村=="川崎市"|居住市区町村=="")%>%
-    mutate(Residential_City=paste0(居住市区町村,備考))%>%
-    select(-居住市区町村,-備考,-X,-Y)%>%
-    rename("Fixed_Date"="確定日",
-           "Hospital_Pref"="受診都道府県",
-           "Residential_Pref"="居住都道府県")%>%
-    filter(Residential_City!="")
-  data2<-fread("kanagawa.csv", encoding="UTF-8") %>%
-    mutate(確定日= as.Date(確定日,format = "%m/%d/%Y"))%>%
-    select(確定日,受診都道府県,居住都道府県,居住市区町村,備考,X,Y)%>%
-    filter(居住都道府県=="神奈川県")%>%
-    filter(居住市区町村!="川崎市",居住市区町村!="")%>%
-    rename("Residential_City"="居住市区町村")%>%
-    select(-備考)%>%
-    rename("Fixed_Date"="確定日",
-           "Hospital_Pref"="受診都道府県",
-           "Residential_Pref"="居住都道府県")
-  
-  patient<-
-    read.csv("https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv") %>%
-    filter(!str_detect(居住地,"管内")) %>%
-    filter(発表日>="2020-12-01") %>%
-    rename("Fixed_Date"="発表日","Residential_City"="居住地") %>%
-    select(-年代,-性別)%>%
-    mutate(Residential_City = str_replace(Residential_City,"神奈川県",""))%>%
-    mutate(Fixed_Date=as.Date(Fixed_Date))
-  
-  kanagawa<-read.csv("kanagawa2.csv") %>%
-    select(-X,-note)%>%
-    mutate(Fixed_Date=as.Date(Fixed_Date))
-  
-  
-  kanagawa2<-rbind(kanagawa,patient) %>%
-    mutate(Hospital_Pref ="神奈川県",
-           Residential_Pref="神奈川県"
-    )
-  
-  xy<-read.csv("xy.csv") %>%
-    select(-X.1)%>%
-    rename("Residential_City"="居住市区町村")
-  chigasaki<-
-    read.csv("chigasaki.csv")%>%
-    mutate(Hospital_Pref ="神奈川県",
-           Residential_Pref="神奈川県"
-    )%>%
+  # data<-
+  #   fread("kanagawa.csv", encoding="UTF-8") %>%
+  #   mutate(確定日= as.Date(確定日,format = "%m/%d/%Y"))%>%
+  #   select(確定日,受診都道府県,居住都道府県,居住市区町村,備考,X,Y)%>%
+  #   filter(居住都道府県=="神奈川県")%>%
+  #   filter(居住市区町村=="川崎市"|居住市区町村=="")%>%
+  #   mutate(Residential_City=paste0(居住市区町村,備考))%>%
+  #   select(-居住市区町村,-備考,-X,-Y)%>%
+  #   rename("Fixed_Date"="確定日",
+  #          "Hospital_Pref"="受診都道府県",
+  #          "Residential_Pref"="居住都道府県")%>%
+  #   filter(Residential_City!="")
+  # data2<-fread("kanagawa.csv", encoding="UTF-8") %>%
+  #   mutate(確定日= as.Date(確定日,format = "%m/%d/%Y"))%>%
+  #   select(確定日,受診都道府県,居住都道府県,居住市区町村,備考,X,Y)%>%
+  #   filter(居住都道府県=="神奈川県")%>%
+  #   filter(居住市区町村!="川崎市",居住市区町村!="")%>%
+  #   rename("Residential_City"="居住市区町村")%>%
+  #   select(-備考)%>%
+  #   rename("Fixed_Date"="確定日",
+  #          "Hospital_Pref"="受診都道府県",
+  #          "Residential_Pref"="居住都道府県")
+  # 
+  # patient<-
+  #   read.csv("https://www.pref.kanagawa.jp/osirase/1369/data/csv/patient.csv") %>%
+  #   filter(!str_detect(居住地,"管内")) %>%
+  #   filter(発表日>="2020-12-01") %>%
+  #   rename("Fixed_Date"="発表日","Residential_City"="居住地") %>%
+  #   select(-年代,-性別)%>%
+  #   mutate(Residential_City = str_replace(Residential_City,"神奈川県",""))%>%
+  #   mutate(Fixed_Date=as.Date(Fixed_Date))
+  # 
+  # kanagawa<-read.csv("kanagawa2.csv") %>%
+  #   select(-X,-note)%>%
+  #   mutate(Fixed_Date=as.Date(Fixed_Date))
+  # 
+  # 
+  # kanagawa2<-rbind(kanagawa,patient) %>%
+  #   mutate(Hospital_Pref ="神奈川県",
+  #          Residential_Pref="神奈川県"
+  #   )
+  # 
+  # xy<-read.csv("xy.csv") %>%
+  #   select(-X.1)%>%
+  #   rename("Residential_City"="居住市区町村")
+  # chigasaki<-
+  #   read.csv("chigasaki.csv")%>%
+  #   mutate(Hospital_Pref ="神奈川県",
+  #          Residential_Pref="神奈川県"
+  #   )%>%
+  #   mutate(Fixed_Date=as.Date(Fixed_Date))%>%
+  #   left_join(xy,by="Residential_City")%>%
+  #   filter(!is.na(X))
+  # 
+  # list1<-read.csv("list.csv")
+  # data3<-
+  #   data%>%
+  #   left_join(list1,by=c("Residential_City"="list"))%>%
+  #   select(-Residential_City)%>%
+  #   rename("Residential_City"="管内")%>%
+  #   filter(!is.na(X))
+  # 
+  # kanagawa2<-
+  #   left_join(kanagawa2,xy,by="Residential_City") %>%
+  #   mutate(Fixed_Date=as.Date(Fixed_Date))%>%
+  #   filter(!is.na(X))
+  # 
+  # 
+  # kawasaki<-
+  #   read.csv("kawasaki.csv") %>%
+  #   select(-X)%>%
+  #   mutate(Fixed_Date=as.Date(Fixed_Date))%>%
+  #   left_join(list1)%>%
+  #   select(-note,-管内,-Residential_City)%>%
+  #   rename("Residential_City"="list")
+  # 
+  # data7<-bind_rows(data2,data3,kanagawa2,kawasaki,chigasaki)
+  # 
+  #   date<-
+  #     kawasaki%>%
+  #     data.frame()%>%
+  #     arrange(desc(Fixed_Date))%>%
+  #     distinct(Fixed_Date)
+  data7<-
+    read.csv("https://raw.githubusercontent.com/tanamym/covid19_colopressmap_isehara/main/coviddata.csv",fileEncoding = "SJIS")%>%
     mutate(Fixed_Date=as.Date(Fixed_Date))%>%
-    left_join(xy,by="Residential_City")%>%
     filter(!is.na(X))
-  
-  list1<-read.csv("list.csv")
-  data3<-
-    data%>%
-    left_join(list1,by=c("Residential_City"="list"))%>%
-    select(-Residential_City)%>%
-    rename("Residential_City"="管内")%>%
-    filter(!is.na(X))
-  
-  kanagawa2<-
-    left_join(kanagawa2,xy,by="Residential_City") %>%
-    mutate(Fixed_Date=as.Date(Fixed_Date))%>%
-    filter(!is.na(X))
-  
-  
-  kawasaki<-
-    read.csv("kawasaki.csv") %>%
-    select(-X)%>%
-    mutate(Fixed_Date=as.Date(Fixed_Date))%>%
-    left_join(list1)%>%
-    select(-note,-管内,-Residential_City)%>%
-    rename("Residential_City"="list")
-  
-  data7<-bind_rows(data2,data3,kanagawa2,kawasaki,chigasaki)
-
-    date<-
-      kawasaki%>%
-      data.frame()%>%
-      arrange(desc(Fixed_Date))%>%
-      distinct(Fixed_Date)
-    
+  date<-
+    data7%>%
+    data.frame()%>%
+    arrange(desc(Fixed_Date))%>%
+    distinct(Fixed_Date)
     output$date<-
       renderUI({
         dateInput("x",
