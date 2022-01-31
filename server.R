@@ -76,23 +76,17 @@ shinyServer(function(input, output, session) {
     fread("https://raw.githubusercontent.com/tanamym/covid19_colopressmap_isehara/main/yoko_covid.csv",encoding="UTF-8") %>%
     mutate(Fixed_Date=as.Date(Date),
            Residential_City=City)
-  xy<-read.csv("xy.csv",encoding = "SHIFT-JIS")
-  list<-read.csv("list.csv",encoding = "SHIFT-JIS")%>%
-    rename("X1"="X","Y1"="Y")
+
   data7 <-
     rbind(data2020,data202106,data202109,data2021) %>%
     mutate(Fixed_Date=as.Date(Fixed_Date)) %>%
     arrange(desc(Fixed_Date),Hos,hos)%>%
-    count(Fixed_Date,Residential_City,hos)%>%
+    count(Fixed_Date,Residential_City,hos,X,Y)%>%
     full_join(ycd%>%
                 mutate(hos="yokohama"))%>%
     mutate(Residential_City=ifelse(!is.na(City),City,Residential_City)) %>%
     mutate(n=ifelse(!is.na(City),count,n))%>%
-    arrange(Fixed_Date)%>%
-    left_join(xy,by=c("Residential_City"="City"))%>%
-    left_join(list,by=c("Residential_City"="list"))%>%
-    mutate(X=ifelse(is.na(X),X1,X),
-           Y=ifelse(is.na(Y),Y1,Y))
+    arrange(Fixed_Date)
   date <- 
     data.frame(Date=min(data7$Fixed_Date):max(data7$Fixed_Date)) %>%
     arrange(desc(Date)) %>%
@@ -122,12 +116,20 @@ shinyServer(function(input, output, session) {
     output$covid_map <- renderLeaflet({
         #ここ書き換える
         switch (input$button,
-                leaflet1 = { date<-lubridate::ymd(input$x)-input$y
+                leaflet1 = { 
+                  x<-input$x
+                  y<-input$y
+                  if(is.null(x)){
+                  x<-max(date$Date)
+                  y<-14
+                }
+                  date<-lubridate::ymd(x)-y
+               
                 #集計
                 data7.1<-data7%>%
-                    filter(Fixed_Date>=date,Fixed_Date<=lubridate::ymd(input$x))%>%
+                    filter(Fixed_Date>=date,Fixed_Date<=lubridate::ymd(x))%>%
                     group_by(Residential_City,X,Y)%>%
-                    summarise(count=n())%>%
+                    summarise(count=sum(n))%>%
                     filter(X>0,Y>0)
 
                 #leafletの可視化
@@ -150,7 +152,7 @@ shinyServer(function(input, output, session) {
                     data7.1<-data7%>%
                         filter(Fixed_Date>=date,Fixed_Date<=lubridate::ymd(input$x))%>%
                         group_by(Residential_City,X,Y)%>%
-                        summarise(count=n())%>%
+                        summarise(count=sum(n))%>%
                         filter(X>0,Y>0)
                     jinko2<-left_join(data7.1,jinko,by=c("Residential_City"="City"))
                     jinko3<-jinko2%>%
