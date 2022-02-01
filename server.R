@@ -123,7 +123,7 @@ shinyServer(function(input, output, session) {
                   x<-max(date$Date)
                   y<-14
                 }
-                  date<-lubridate::ymd(x)-y
+                  date<-lubridate::ymd(x)-y+1
                
                 #集計
                 data7.1<-data7%>%
@@ -145,12 +145,12 @@ shinyServer(function(input, output, session) {
                                      radius =sqrt(data7.1$count)*input$en,
                                      label = ~htmlEscape(count),
                                      labelOptions = labelOptions(direction = 'bottom',noHide = T, textOnly = TRUE,textsize = "10px"),
-                    )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(input$x),sep = "~")))  , position = "topright") },
+                    )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(x),sep = "~")))  , position = "topright") },
                 leaflet2={
                     date<-lubridate::ymd(input$x)-input$y
                     #集計
                     data7.1<-data7%>%
-                        filter(Fixed_Date>=date,Fixed_Date<=lubridate::ymd(input$x))%>%
+                        filter(Fixed_Date>=date,Fixed_Date<=lubridate::ymd(x))%>%
                         group_by(Residential_City,X,Y)%>%
                         summarise(count=sum(n))%>%
                         filter(X>0,Y>0)
@@ -169,7 +169,7 @@ shinyServer(function(input, output, session) {
                                          radius =sqrt(jinko3$count_j)*input$en,
                                          label = ~htmlEscape(round(count_j,digits = 4)),
                                          labelOptions = labelOptions(direction = 'bottom',noHide = T, textOnly = TRUE,textsize = "10px")
-                        )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(input$x),sep = "~")))  , position = "topright")
+                        )%>%addControl(tags$div(HTML(paste(date,lubridate::ymd(x),sep = "~")))  , position = "topright")
                     }
                 )
     }
